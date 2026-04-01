@@ -1,15 +1,20 @@
-# 1. Python tabanlı bir imaj seç
-FROM python:3.10-slim
+from flask import Flask, render_template, request, redirect
 
-# 2. Konteyner içinde çalışma dizini oluştur
-WORKDIR /app
+app = Flask(__name__)
 
-# 3. Gereksinim dosyasını kopyala ve bağımlılıkları yükle
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# Mesajları geçici bir listede tutuyoruz (veritabanı yerine)
+mesajlar = []
 
-# 4. Uygulama dosyalarını kopyala
-COPY . .
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        isim = request.form.get("isim")
+        mesaj = request.form.get("mesaj")
+        if isim and mesaj:
+            mesajlar.append({"isim": isim, "mesaj": mesaj})
+        return redirect("/")
 
-# 5. Uygulamayı başlat
-CMD ["python", "web_service.py"]
+    return render_template("index.html", mesajlar=mesajlar)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
